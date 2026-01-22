@@ -13,9 +13,12 @@ const SignUp = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error,setError]=useState("")
+   const [loading, setLoading] = useState(false)
 
   const handleSignUp = async (e) => {
     e.preventDefault();
+    setError("")
     try {
       const result = await axios.post(
         `${serverUrl}/api/auth/signup`,
@@ -23,9 +26,12 @@ const SignUp = () => {
         { withCredentials: true }
       );
       console.log(result);
+      setLoading(false)
       navigate("/signin"); 
     } catch (error) {
       console.log(error);
+      setLoading(false)
+      setError(error.response.data.message)
     }
   };
 
@@ -71,7 +77,7 @@ const SignUp = () => {
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Password"
-            className="w-full h-full rounded-full outline-none bg-transparent
+            className="text-white w-full h-full rounded-full outline-none bg-transparent
             placeholder-gray-300 px-[20px]"
             required
             onChange={(e) => setPassword(e.target.value)}
@@ -91,8 +97,10 @@ const SignUp = () => {
           )}
         </div>
 
-        <button className="min-w-[150px] h-[60px] mt-[30px] text-black font-semibold bg-white rounded-full text-[19px]">
-          Sign Up
+        {error.length>0 && <p className="text-red-500">{error}</p> }
+
+        <button className="min-w-[150px] h-[60px] mt-[30px] text-black font-semibold bg-white rounded-full text-[19px]"disabled={loading}>
+          {loading?"Loading...." :"Sign Up"}
         </button>
 
         <p

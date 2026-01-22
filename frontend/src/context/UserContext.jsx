@@ -1,6 +1,6 @@
-import { createContext } from "react";
+import React, { createContext } from "react";
 
-export const userDataContext = createContext();
+export const userDataContext = createContext(null);
 
 const UserContextProvider = ({ children }) => {
   const serverUrl = "http://localhost:8080";
