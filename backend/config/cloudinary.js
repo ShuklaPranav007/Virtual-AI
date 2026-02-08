@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 
-const uploadigOnCloding = async()=>{
+const uploadOnCloudinary= async(filepath)=>{
 }
  cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
@@ -9,3 +10,14 @@ const uploadigOnCloding = async()=>{
 });
 
 
+try{
+    const uploadResult = await cloudinary.uploader.upload(filepath)
+    fs.unlink(filepath)
+    return uploadResult.secure_url
+}catch(error){
+    fs.unlinkSync(filepath)
+    return resizeBy.status(500).json({message:"cloudinary error"})
+}
+
+
+export default uploadOnCloudinary

@@ -1,8 +1,8 @@
 import jwt, { verify } from "jsonwebtoken"
 
-const isAUth = async (req, res, next)=>{
+const isAuth = async (req, res, next)=>{
     try{
-        const token = req.cookie.token
+        const token = req.cookies.token
         if(!token){
             return res.status(400).json({message:"token not found"})
         }
@@ -16,4 +16,4 @@ const isAUth = async (req, res, next)=>{
     }
 }
 
-export default isAUth
+export default isAuth
