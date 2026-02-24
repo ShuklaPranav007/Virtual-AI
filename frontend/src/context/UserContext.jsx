@@ -1,15 +1,46 @@
-import React, { createContext } from "react";
+import React, { createContext, useState, useEffect } from "react";
+import axios from "axios";
 
-export const userDataContext = createContext(null);
+export const userDataContext = createContext();
 
-const UserContextProvider = ({ children }) => {
+function UserContextProvider({ children }) {
   const serverUrl = "http://localhost:8080";
 
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const handleCurrentUser = async () => {
+    try {
+      const result = await axios.get(
+        `${serverUrl}/api/user/current`,
+        { withCredentials: true }
+      );
+
+      setUserData(result.data);
+    } catch (error) {
+      setUserData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleCurrentUser();
+  }, []);
+
   return (
-    <userDataContext.Provider value={{ serverUrl }}>
+    <userDataContext.Provider
+      value={{
+        serverUrl,
+        userData,
+        setUserData,
+        handleCurrentUser,
+        loading
+      }}
+    >
       {children}
     </userDataContext.Provider>
   );
-};
+}
 
 export default UserContextProvider;

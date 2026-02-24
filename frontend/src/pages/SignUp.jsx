@@ -8,7 +8,7 @@ import axios from "axios";
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { serverUrl } = useContext(userDataContext);
+  const { serverUrl,userData, setUserData } = useContext(userDataContext);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,16 +20,17 @@ const SignUp = () => {
     e.preventDefault();
     setError("")
     try {
-      const result = await axios.post(
+      let result = await axios.post(
         `${serverUrl}/api/auth/signup`,
         { name, email, password },
         { withCredentials: true }
       );
-      console.log(result);
+      setUserData(result.data)
       setLoading(false)
-      navigate("/signin"); 
+      navigate("/customize"); 
     } catch (error) {
       console.log(error);
+      setUserData(null)
       setLoading(false)
       setError(error.response.data.message)
     }
