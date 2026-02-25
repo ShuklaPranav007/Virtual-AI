@@ -1,23 +1,28 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
 
-const uploadOnCloudinary= async(filepath)=>{
-}
- cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
-    api_key: process.env.CLOUD_API_KEY,
-    api_secret: process.env.CLOUD_API_SECRET,
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
 });
 
+const uploadOnCloudinary = async (filepath) => {
+  try {
+    if (!filepath) return null;
 
-try{
-    const uploadResult = await cloudinary.uploader.upload(filepath)
-    fs.unlink(filepath)
-    return uploadResult.secure_url
-}catch(error){
-    fs.unlinkSync(filepath)
-    return resizeBy.status(500).json({message:"cloudinary error!!"})
-}
+    const uploadResult = await cloudinary.uploader.upload(filepath, {
+      folder: "virtual-ai",
+    });
 
+    fs.unlinkSync(filepath); // remove file from local storage
 
-export default uploadOnCloudinary
+    return uploadResult.secure_url;
+
+  } catch (error) {
+    fs.unlinkSync(filepath); // remove file even if upload fails
+    throw new Error("Cloudinary upload failed");
+  }
+};
+
+export default uploadOnCloudinary;
