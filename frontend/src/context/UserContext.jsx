@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, use } from "react";
 import axios from "axios";
 
 export const userDataContext = createContext();
@@ -8,6 +8,9 @@ function UserContextProvider({ children }) {
 
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [frontendImage, setFrontendImage] = useState(null);
+  const [backendImage, setBackendImage] = useState(null);
+  const [selectedImage, setSelectedImage]= useState(null);
 
   const handleCurrentUser = async () => {
     try {
@@ -35,7 +38,10 @@ function UserContextProvider({ children }) {
         userData,
         setUserData,
         handleCurrentUser,
-        loading
+        loading,
+        frontendImage, setFrontendImage,
+        backendImage, setBackendImage,
+        selectedImage, setSelectedImage
       }}
     >
       {children}
