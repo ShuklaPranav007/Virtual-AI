@@ -56,12 +56,24 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Incorrect password!" });
     }
 
+    // const token = getToken(userExist._id);
+
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    //   sameSite: "lax",
+    //   secure: false,
+    // });
+
     const token = getToken(userExist._id);
+
+    console.log("Generated token:", token);
+    console.log("Token type:", typeof token);
 
     res.cookie("token", token, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: "strict",
+      sameSite: "lax",
       secure: false,
     });
 
@@ -72,6 +84,8 @@ export const login = async (req, res) => {
     return res.status(500).json({ message: `Login error: ${error.message}` });
   }
 };
+
+
 
 export const logOut = async (req, res) => {
   try {
