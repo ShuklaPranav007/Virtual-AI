@@ -54,7 +54,7 @@ const Customize = () => {
           }
         >
           {!frontendImage && (
-            <RiImageAddLine className="text-white w-[25px] h-[25px]" />
+            <RiImageAddLine className="text-white w-[50px] h-[50px]  " />
           )}
           {frontendImage && (
             <img src={frontendImage} className="h-full object-cover" />

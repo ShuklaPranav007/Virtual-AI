@@ -38,9 +38,9 @@ function App() {
         element={userData ? <Customize /> : <Navigate to="/signup" />}
       />
       <Route
-        path="/customize2"
-        element={userData ? <Customize2/> : <Navigate to="/signup" />}
-      />
+  path="/customize2"
+  element={userData ? <Customize2/> : <Navigate to="/signup" />}
+/>
     </Routes>
   );
 }
