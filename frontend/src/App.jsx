@@ -17,9 +17,11 @@ function App() {
       <Route
         path="/"
         element={
-          userData?.assistantImage && userData?.assistantName
-            ? <Home />
-            : <Navigate to="/customize" />
+          userData?.assistantImage && userData?.assistantName ? (
+            <Home />
+          ) : (
+            <Navigate to="/customize" />
+          )
         }
       />
 
@@ -38,9 +40,9 @@ function App() {
         element={userData ? <Customize /> : <Navigate to="/signup" />}
       />
       <Route
-  path="/customize2"
-  element={userData ? <Customize2/> : <Navigate to="/signup" />}
-/>
+        path="/customize2"
+        element={userData ? <Customize2 /> : <Navigate to="/signup" />}
+      />
     </Routes>
   );
 }

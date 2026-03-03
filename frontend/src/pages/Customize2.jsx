@@ -16,39 +16,41 @@ const Customize2 = () => {
   const [loading, setLoading] = useState(false);
 
   const handleUpdateAssistant = async () => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const formData = new FormData();
-      formData.append("assistantName", assistantName);
+    const formData = new FormData();
+    formData.append("assistantName", assistantName);
 
-      if (backendImage) {
-        formData.append("assistantImage", backendImage);
-      } else {
-        formData.append("imageUrl", selectedImage);
-      }
-
-      const result = await axios.post(
-        `${serverUrl}/api/user/update`,
-        formData,
-        { withCredentials: true }
-      );
-
-      setUserData(result.data);
-
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
+    if (backendImage) {
+      formData.append("assistantImage", backendImage);
+    } else {
+      formData.append("imageUrl", selectedImage);
     }
-  };
+
+    const result = await axios.post(
+      `${serverUrl}/api/user/update`,
+      formData,
+      { withCredentials: true }
+    );
+
+    setUserData(result.data);
+
+    navigate("/");  
+
+  } catch (error) {
+    console.log(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="w-full h-screen bg-gradient-to-t from-black to-[#030353] flex justify-center items-center flex-col p-[20px] gap-[20px]">
 
       <MdKeyboardBackspace
         className="absolute top-[30px] left-[30px] text-white w-[25px] h-[25px] cursor-pointer"
-        onClick={() => navigate("/customize")}
+        onClick={() => navigate("/")}
       />
 
       <h1 className="text-white text-[30px] text-center">
