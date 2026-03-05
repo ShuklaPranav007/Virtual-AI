@@ -69,7 +69,7 @@ const Customize2 = () => {
 
       {assistantName && (
         <button
-          className="min-w-[200px] h-[60px] mt-[30px] cursor-pointer text-black font-semibold bg-white rounded-full text-[19px]"
+          className="min-w-[200px] h-[60px] mt-[30px] cursor-pointer text-black font-semibold bg-white rounded-full text-[19px] cursor-pointer"
           disabled={loading}
           onClick={handleUpdateAssistant}
         >
