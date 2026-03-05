@@ -50,7 +50,7 @@ const Customize2 = () => {
 
       <MdKeyboardBackspace
         className="absolute top-[30px] left-[30px] text-white w-[25px] h-[25px] cursor-pointer"
-        onClick={() => navigate("/")}
+        onClick={() => navigate("/customize")}
       />
 
       <h1 className="text-white text-[30px] text-center">

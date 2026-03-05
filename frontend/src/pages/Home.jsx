@@ -38,10 +38,10 @@ const Home = () => {
           <img
             src={userData?.assistantImage}
             alt=""
-            className="h-full object-cover"
+            className="h-full object-cover  rounded-full"
           />
         </div>
-        <h1 className="text-white">
+        <h1 className="text-white mt-5">
           I'm {userData?.assistantName} your Assistant{" "}
         </h1>
       </div>
