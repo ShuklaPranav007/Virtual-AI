@@ -10,14 +10,25 @@ function UserContextProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [frontendImage, setFrontendImage] = useState(null);
   const [backendImage, setBackendImage] = useState(null);
-  const [selectedImage, setSelectedImage]= useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const getGeminiResponse = async (command) => {
+      try {
+        const result = await axios.get(
+          `${serverUrl}/api/user/current`,
+          { command },
+          { withCredentials: true },
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
   const handleCurrentUser = async () => {
     try {
-      const result = await axios.get(
-        `${serverUrl}/api/user/current`,
-        { withCredentials: true }
-      );
+      const result = await axios.get(`${serverUrl}/api/user/current`, {
+        withCredentials: true,
+      });
 
       setUserData(result.data);
     } catch (error) {
@@ -26,7 +37,6 @@ function UserContextProvider({ children }) {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     handleCurrentUser();
   }, []);
@@ -39,12 +49,16 @@ function UserContextProvider({ children }) {
         setUserData,
         handleCurrentUser,
         loading,
-        frontendImage, setFrontendImage,
-        backendImage, setBackendImage,
-        selectedImage, setSelectedImage
+        frontendImage,
+        setFrontendImage,
+        backendImage,
+        setBackendImage,
+        selectedImage,
+        setSelectedImage,
+        getGeminiResponse,
       }}
     >
-      {children}
+      {children}{" "}
     </userDataContext.Provider>
   );
 }
