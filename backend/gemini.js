@@ -1,11 +1,9 @@
 import axios from "axios";
-import moment from "moment"; // Ensure moment is imported
+import moment from "moment"; 
 
 export const geminiResponse = async (command, assistantName, userName) => {
     try {
         const apiUrl = process.env.GEMINI_API_URL;
-        
-        // Fixed typos in the instructions (e.g., youtube_search, get_date) and removed duplicates
         const prompt = `You are a Virtual assistant named ${assistantName} created by ${userName}.
 You are not Google. You will now behave like a voice-enabled assistant.
 
@@ -43,14 +41,16 @@ now your userInput: ${command}
 `;
 
         const result = await axios.post(apiUrl, {
-            "content": [{
+            "contents": [{
                 "parts": [{ "text": prompt }]
             }]
         });
         return result.data.candidates[0].content.parts[0].text;
     } catch (error) {
         console.log("Gemini API Error:", error);
-        throw error; // Throw error to be caught by the route handler
+        throw error; 
     }
 }
+
+
 

@@ -1,6 +1,6 @@
 import User from "../models/user.model.js";
 import uploadCloudinary from "../config/cloudinary.js";
-import geminiResponse from "../gemini.js";
+import {geminiResponse} from "../gemini.js";
 import { response } from "express";
 import moment from "moment/moment.js";
 
@@ -72,6 +72,8 @@ export const askToAssistant = async (req, res) => {
         const { command } = req.body;
         // Assuming User is imported from your models
         const user = await User.findById(req.userId); 
+        user.history.push(command)
+        user.save()
         const getUserName = user.name;
         const getAssistantName = user.assistantName;
 
@@ -90,7 +92,6 @@ export const askToAssistant = async (req, res) => {
         const getRandomResponse = (options) => options[Math.floor(Math.random() * options.length)];
 
         switch (type) {
-            // --- Date, Time, Day, Month Cases ---
             case 'get_date':
                 return res.json({
                     type,
@@ -131,9 +132,6 @@ export const askToAssistant = async (req, res) => {
                     ])
                 });
 
-            // --- Gemini Generated Response Cases ---
-            // For these, Gemini already generated a response based on the prompt, 
-            // but we can add two different dynamic prefixes to make it feel fresh!
             case 'general':
                 return res.json({
                     type,
