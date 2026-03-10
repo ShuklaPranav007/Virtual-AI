@@ -13,16 +13,22 @@ function UserContextProvider({ children }) {
   const [selectedImage, setSelectedImage] = useState(null);
 
   const getGeminiResponse = async (command) => {
-      try {
-        const result = await axios.get(
-          `${serverUrl}/api/user/current`,
-          { command },
-          { withCredentials: true },
-        );
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    try {
+      // 1. Changed URL to the "ask" route (Verify this matches your backend!)
+      const result = await axios.post(
+        `${serverUrl}/api/user/asktoassistant`, 
+        { command },
+        { withCredentials: true }
+      );
+      
+      return result.data; 
+
+    } catch (error) {
+      console.log("Error fetching Gemini response:", error);
+      
+      return { response: "Sorry, I am having trouble connecting to my server." };
+    }
+  };
 
   const handleCurrentUser = async () => {
     try {
