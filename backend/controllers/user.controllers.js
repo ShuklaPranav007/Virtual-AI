@@ -70,14 +70,13 @@ export const updateAssistant = async (req, res) => {
 export const askToAssistant = async (req, res) => {
     try {
         const { command } = req.body;
-        // Assuming User is imported from your models
+        
         const user = await User.findById(req.userId); 
         user.history.push(command)
         user.save()
         const getUserName = user.name;
         const getAssistantName = user.assistantName;
 
-        // FIX: Corrected the parameter order here to match the function definition
         const result = await geminiResponse(command, getAssistantName, getUserName);
 
         const jsonMatch = result.match(/{[\s\S]*}/);

@@ -21,7 +21,7 @@ Instructions:
 -"response": A short voice-friendly reply.
 
 Type meanings:
--"general": if it's a factual or informational question.
+-"general": if it's a factual or informational question aur agar koi aisa question pooche jiska answer pta hai usko general ki category mai rakhna aur short answer dena.
 -"google_search": if user wants to search something on Google.
 -"youtube_search": if user wants to search something on YouTube.
 -"youtube_play": if user wants to directly play a video or song.
