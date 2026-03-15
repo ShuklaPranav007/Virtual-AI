@@ -6,11 +6,14 @@ import listen from "../assets/listen.gif";
 import talk from "../assets/talking.gif";
 
 const Home = () => {
-  const { userData, serverUrl, setUserData, getGeminiResponse } = useContext(userDataContext);
+  const { userData, serverUrl, setUserData, getGeminiResponse } =
+    useContext(userDataContext);
   const [loading, setLoading] = useState(false);
   const [actionLink, setActionLink] = useState(null);
-  const [userText, setUserText] = useState("");
-  const [aiText, setAiText] = useState("");
+  
+  // --- FIXED: Replaced aiText with an active speaking state ---
+  const [isSpeaking, setIsSpeaking] = useState(false); 
+  
   const navigate = useNavigate();
   const recognitionRef = useRef(null);
   const isCooldown = useRef(false);
@@ -33,7 +36,8 @@ const Home = () => {
   useEffect(() => {
     if (!userData?.assistantName) return;
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
       console.warn("Speech Recognition is not supported in this browser.");
@@ -45,7 +49,11 @@ const Home = () => {
     recognition.lang = "en-US";
 
     // Retry Logic for Gemini API
-    const callGeminiWithRetry = async (transcript, retries = 3, delay = 1000) => {
+    const callGeminiWithRetry = async (
+      transcript,
+      retries = 3,
+      delay = 1000,
+    ) => {
       for (let i = 0; i < retries; i++) {
         try {
           return await getGeminiResponse(transcript);
@@ -66,20 +74,18 @@ const Home = () => {
       const utterance = new SpeechSynthesisUtterance(text);
       window.currentUtterance = utterance; // Prevents Chrome from stopping audio early
 
-      // --- ADDED HINDI VOICE LOGIC ---
-      utterance.lang = "hi-IN";
-      const voices = window.speechSynthesis.getVoices();
-      const hindiVoice = voices.find((v) => v.lang === "hi-IN");
-      if (hindiVoice) {
-        utterance.voice = hindiVoice;
-      }
-      // -------------------------------
-
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
 
+      // --- ADDED: Triggers the Talking GIF when speech starts ---
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+      };
+
+      // --- ADDED: Reverts to the Listening GIF when speech ends ---
       utterance.onend = () => {
+        setIsSpeaking(false);
         isCooldown.current = false;
         if (recognitionRef.current) {
           try {
@@ -89,6 +95,7 @@ const Home = () => {
       };
 
       utterance.onerror = () => {
+        setIsSpeaking(false);
         isCooldown.current = false;
         if (recognitionRef.current) {
           try {
@@ -143,7 +150,9 @@ const Home = () => {
       console.log("Heard:", transcript);
 
       if (
-        transcript.toLowerCase().includes(userData.assistantName.toLowerCase()) &&
+        transcript
+          .toLowerCase()
+          .includes(userData.assistantName.toLowerCase()) &&
         !isCooldown.current
       ) {
         isCooldown.current = true;
@@ -162,7 +171,7 @@ const Home = () => {
         } catch (error) {
           console.error("Failed to get response:", error);
           speak(
-            "Sorry, I'm having trouble connecting to my network right now."
+            "Sorry, I'm having trouble connecting to my network right now.",
           );
           isCooldown.current = false;
         }
@@ -219,8 +228,6 @@ const Home = () => {
         >
           {loading ? "Logging out..." : "Log Out"}
         </button>
-
-       
       </div>
 
       {/* --- MAIN CENTER CONTENT --- */}
@@ -244,10 +251,13 @@ const Home = () => {
           I'm {userData?.assistantName || "your Assistant"}. How can I help you?
         </h1>
 
-        {/* GIFs Section */}
+        {/* --- FIXED: GIF Switching Logic --- */}
         <div className="flex justify-center items-center h-[150px] mt-2">
-          {!aiText && <img src={talk} alt="talking" className="w-[150px] object-contain drop-shadow-lg" />}
-          {aiText && <img src={listen} alt="listening" className="w-[150px] object-contain drop-shadow-lg" />}
+          {isSpeaking ? (
+            <img src={talk} alt="talking" className="w-[150px] object-contain drop-shadow-lg" />
+          ) : (
+            <img src={listen} alt="listening" className="w-[150px] object-contain drop-shadow-lg" />
+          )}
         </div>
 
         {/* Dynamic Action Button */}
