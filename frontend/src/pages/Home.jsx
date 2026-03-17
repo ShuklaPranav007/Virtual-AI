@@ -10,8 +10,6 @@ const Home = () => {
     useContext(userDataContext);
   const [loading, setLoading] = useState(false);
   const [actionLink, setActionLink] = useState(null);
-  
-  // Text is completely empty by default so it stays hidden
   const [aiText, setAiText] = useState(""); 
   
   const navigate = useNavigate();
@@ -86,7 +84,6 @@ const Home = () => {
       utterance.onend = () => {
         setIsSpeaking(false);
         isCooldown.current = false;
-        // Note: We don't clear aiText here so you have time to read the response!
         if (recognitionRef.current) {
           try {
             recognitionRef.current.start();
@@ -161,7 +158,7 @@ const Home = () => {
       ) {
         isCooldown.current = true;
         setActionLink(null); 
-        setAiText("Thinking..."); // Appears when processing
+        setAiText("Thinking...");
 
         try {
           console.log(`Sending command to backend: ${transcript}`);
@@ -219,6 +216,30 @@ const Home = () => {
   return (
     <div className="relative w-full h-screen bg-gradient-to-t from-black to-[#030353] flex flex-col justify-center items-center overflow-hidden">
       
+      {/* --- HOTSTAR-STYLE LEFT SIDEBAR --- */}
+      <div className="absolute left-0 top-0 h-full w-[80px] hover:w-[260px] bg-black/40 backdrop-blur-xl border-r border-white/10 transition-all duration-300 z-50 flex flex-col items-start py-8 overflow-hidden group shadow-2xl">
+        
+        {/* User Profile Section */}
+        <div className="flex items-center gap-4 px-5 w-full mt-4 cursor-pointer">
+          {/* Avatar / Initials */}
+          <div className="w-[40px] h-[40px] rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+            {userData?.name ? userData.name.charAt(0).toUpperCase() : "U"}
+          </div>
+          
+          {/* Username (Fades in smoothly on hover) */}
+          <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75 whitespace-nowrap">
+            <span className="text-white font-semibold text-lg drop-shadow-md">
+              {userData?.name || "User"}
+            </span>
+            <span className="text-blue-400 text-xs font-medium tracking-wider uppercase">
+              Creator
+            </span>
+          </div>
+        </div>
+
+        {/* You can easily add more navigation icons below this in the future! */}
+      </div>
+
       {/* --- TOP BUTTONS (SIDE-BY-SIDE) --- */}
       <div className="absolute top-5 right-5 flex gap-4 z-10">
          <button
@@ -237,7 +258,7 @@ const Home = () => {
       </div>
 
       {/* --- MAIN CENTER CONTENT --- */}
-      <div className="flex flex-col justify-center items-center w-full max-w-2xl mt-10 px-4">
+      <div className="flex flex-col justify-center items-center w-full max-w-2xl mt-10 px-4 pl-[80px]">
         
         {/* Assistant Avatar */}
         <div className="w-[200px] h-[200px] md:w-[250px] md:h-[250px] flex justify-center items-center overflow-hidden rounded-full shadow-[0_0_40px_rgba(30,58,138,0.6)] border-4 border-white/20 bg-[#030326]">
@@ -257,7 +278,7 @@ const Home = () => {
           I'm {userData?.assistantName || "your Assistant"}. How can I help you?
         </h1>
 
-        {/* --- UPDATED: GIF & Text Stacked Vertically --- */}
+        {/* GIF & Text Stacked Vertically */}
         <div className="flex flex-col items-center justify-center w-full mt-4 gap-4">
           
           {/* GIF Centered */}
@@ -269,7 +290,7 @@ const Home = () => {
             )}
           </div>
 
-          {/* Clean Response Text (Only renders if aiText has content) */}
+          {/* Clean Response Text */}
           {aiText && (
             <p className="text-white/70 text-sm sm:text-base font-medium text-center max-w-[400px] animate-fade-in">
               {aiText}
