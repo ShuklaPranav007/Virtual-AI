@@ -11,12 +11,14 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [actionLink, setActionLink] = useState(null);
   
-  // --- FIXED: Replaced aiText with an active speaking state ---
-  const [isSpeaking, setIsSpeaking] = useState(false); 
+  // Text is completely empty by default so it stays hidden
+  const [aiText, setAiText] = useState(""); 
   
   const navigate = useNavigate();
   const recognitionRef = useRef(null);
   const isCooldown = useRef(false);
+
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const handleLogOut = async () => {
     setLoading(true);
@@ -48,7 +50,6 @@ const Home = () => {
     recognition.continuous = true;
     recognition.lang = "en-US";
 
-    // Retry Logic for Gemini API
     const callGeminiWithRetry = async (
       transcript,
       retries = 3,
@@ -72,21 +73,20 @@ const Home = () => {
     const speak = (text) => {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      window.currentUtterance = utterance; // Prevents Chrome from stopping audio early
+      window.currentUtterance = utterance; 
 
       if (recognitionRef.current) {
         recognitionRef.current.stop();
       }
 
-      // --- ADDED: Triggers the Talking GIF when speech starts ---
       utterance.onstart = () => {
         setIsSpeaking(true);
       };
 
-      // --- ADDED: Reverts to the Listening GIF when speech ends ---
       utterance.onend = () => {
         setIsSpeaking(false);
         isCooldown.current = false;
+        // Note: We don't clear aiText here so you have time to read the response!
         if (recognitionRef.current) {
           try {
             recognitionRef.current.start();
@@ -107,42 +107,46 @@ const Home = () => {
       window.speechSynthesis.speak(utterance);
     };
 
-    // --- OPTIMIZED ACTION BUTTON HANDLER ---
     const handleCommand = (data) => {
       const { type, userInput, response } = data;
 
-      speak(response);
-      const query = encodeURIComponent(userInput || "");
+      const cleanResponse = response.replace(/^Here is what I found:\s*/i, "").trim();
 
-      let urlToOpen = "";
-      let buttonText = "";
+      setTimeout(() => {
+        setAiText(cleanResponse); 
+        speak(cleanResponse);
+        
+        const query = encodeURIComponent(userInput || "");
 
-      if (type === "google_search") {
-        urlToOpen = `https://www.google.com/search?q=${query}`;
-        buttonText = "View Google Search";
-      } else if (type === "calculator_open") {
-        urlToOpen = `https://www.google.com/search?q=calculator`;
-        buttonText = "Open Calculator";
-      } else if (type === "instagram_open") {
-        urlToOpen = `https://www.instagram.com/`;
-        buttonText = "Open Instagram";
-      } else if (type === "facebook_open") {
-        urlToOpen = `https://www.facebook.com/`;
-        buttonText = "Open Facebook";
-      } else if (type === "weather-show") {
-        urlToOpen = `https://www.google.com/search?q=${query || "weather"}`;
-        buttonText = "View Weather";
-      } else if (type === "youtube_search" || type === "youtube_play") {
-        urlToOpen = `https://www.youtube.com/results?search_query=${query}`;
-        buttonText = "Open YouTube";
-      }
+        let urlToOpen = "";
+        let buttonText = "";
 
-      // Set the button state if a link was generated
-      if (urlToOpen) {
-        setActionLink({ url: urlToOpen, text: buttonText });
-      } else {
-        setActionLink(null);
-      }
+        if (type === "google_search") {
+          urlToOpen = `https://www.google.com/search?q=${query}`;
+          buttonText = "View Google Search";
+        } else if (type === "calculator_open") {
+          urlToOpen = `https://www.google.com/search?q=calculator`;
+          buttonText = "Open Calculator";
+        } else if (type === "instagram_open") {
+          urlToOpen = `https://www.instagram.com/`;
+          buttonText = "Open Instagram";
+        } else if (type === "facebook_open") {
+          urlToOpen = `https://www.facebook.com/`;
+          buttonText = "Open Facebook";
+        } else if (type === "weather-show") {
+          urlToOpen = `https://www.google.com/search?q=${query || "weather"}`;
+          buttonText = "View Weather";
+        } else if (type === "youtube_search" || type === "youtube_play") {
+          urlToOpen = `https://www.youtube.com/results?search_query=${query}`;
+          buttonText = "Open YouTube";
+        }
+
+        if (urlToOpen) {
+          setActionLink({ url: urlToOpen, text: buttonText });
+        } else {
+          setActionLink(null);
+        }
+      }, 1000); 
     };
 
     recognition.onresult = async (e) => {
@@ -156,7 +160,8 @@ const Home = () => {
         !isCooldown.current
       ) {
         isCooldown.current = true;
-        setActionLink(null); // Clear the old button when asking a new question
+        setActionLink(null); 
+        setAiText("Thinking..."); // Appears when processing
 
         try {
           console.log(`Sending command to backend: ${transcript}`);
@@ -167,12 +172,13 @@ const Home = () => {
             handleCommand(data);
           } else {
             isCooldown.current = false;
+            setAiText("I couldn't understand that.");
           }
         } catch (error) {
           console.error("Failed to get response:", error);
-          speak(
-            "Sorry, I'm having trouble connecting to my network right now.",
-          );
+          const errorMsg = "Sorry, I'm having trouble connecting to my network right now.";
+          setAiText(errorMsg);
+          speak(errorMsg);
           isCooldown.current = false;
         }
       }
@@ -231,10 +237,10 @@ const Home = () => {
       </div>
 
       {/* --- MAIN CENTER CONTENT --- */}
-      <div className="flex flex-col justify-center items-center w-full max-w-lg mt-10">
+      <div className="flex flex-col justify-center items-center w-full max-w-2xl mt-10 px-4">
         
         {/* Assistant Avatar */}
-        <div className="w-[250px] h-[250px] md:w-[300px] md:h-[300px] flex justify-center items-center overflow-hidden rounded-full shadow-[0_0_40px_rgba(30,58,138,0.6)] border-4 border-white/20 bg-[#030326]">
+        <div className="w-[200px] h-[200px] md:w-[250px] md:h-[250px] flex justify-center items-center overflow-hidden rounded-full shadow-[0_0_40px_rgba(30,58,138,0.6)] border-4 border-white/20 bg-[#030326]">
           {userData?.assistantImage ? (
             <img
               src={userData.assistantImage}
@@ -247,17 +253,29 @@ const Home = () => {
         </div>
 
         {/* Assistant Greeting */}
-        <h1 className="text-white mt-8 text-2xl md:text-3xl font-bold text-center drop-shadow-md px-4">
+        <h1 className="text-white mt-8 text-2xl md:text-3xl font-bold text-center drop-shadow-md mb-2">
           I'm {userData?.assistantName || "your Assistant"}. How can I help you?
         </h1>
 
-        {/* --- FIXED: GIF Switching Logic --- */}
-        <div className="flex justify-center items-center h-[150px] mt-2">
-          {isSpeaking ? (
-            <img src={talk} alt="talking" className="w-[150px] object-contain drop-shadow-lg" />
-          ) : (
-            <img src={listen} alt="listening" className="w-[150px] object-contain drop-shadow-lg" />
+        {/* --- UPDATED: GIF & Text Stacked Vertically --- */}
+        <div className="flex flex-col items-center justify-center w-full mt-4 gap-4">
+          
+          {/* GIF Centered */}
+          <div className="w-[100px] sm:w-[120px]">
+            {isSpeaking ? (
+              <img src={talk} alt="talking" className="w-full object-contain drop-shadow-lg" />
+            ) : (
+              <img src={listen} alt="listening" className="w-full object-contain drop-shadow-lg" />
+            )}
+          </div>
+
+          {/* Clean Response Text (Only renders if aiText has content) */}
+          {aiText && (
+            <p className="text-white/70 text-sm sm:text-base font-medium text-center max-w-[400px] animate-fade-in">
+              {aiText}
+            </p>
           )}
+
         </div>
 
         {/* Dynamic Action Button */}
@@ -266,7 +284,7 @@ const Home = () => {
             href={actionLink.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full shadow-lg transition transform hover:scale-105"
+            className="mt-6 px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full shadow-lg transition transform hover:scale-105"
           >
             {actionLink.text}
           </a>
