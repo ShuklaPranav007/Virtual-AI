@@ -25,6 +25,7 @@ const Customize = () => {
     setBackendImage,
     selectedImage,
     setSelectedImage,
+    getAuthHeaders, // <--- ADDED THIS
   } = useContext(userDataContext);
   
   const navigate = useNavigate();
@@ -52,10 +53,11 @@ const Customize = () => {
         formData.append("imageUrl", selectedImage);
       }
 
+      // --- UPDATED: Using getAuthHeaders() instead of withCredentials ---
       const result = await axios.post(
         `${serverUrl}/api/user/update`,
         formData,
-        { withCredentials: true }
+        getAuthHeaders()
       );
 
       setUserData(result.data);

@@ -1,29 +1,29 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
 import { userDataContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import listen from "../assets/listen.gif";
 import talk from "../assets/talking.gif";
 
 const Home = () => {
-  const { userData, serverUrl, setUserData, getGeminiResponse } =
+  const { userData, setUserData, getGeminiResponse } =
     useContext(userDataContext);
   const [loading, setLoading] = useState(false);
   const [actionLink, setActionLink] = useState(null);
   const [aiText, setAiText] = useState(""); 
   
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [commandHistory, setCommandHistory] = useState([]);
+
   const navigate = useNavigate();
   const recognitionRef = useRef(null);
   const isCooldown = useRef(false);
-
   const [isSpeaking, setIsSpeaking] = useState(false);
 
+  // --- UPDATED: Securely logout using LocalStorage ---
   const handleLogOut = async () => {
     setLoading(true);
     try {
-      await axios.get(`${serverUrl}/api/auth/logout`, {
-        withCredentials: true,
-      });
+      localStorage.removeItem("token");
       setUserData(null);
       navigate("/");
     } catch (error) {
@@ -104,17 +104,20 @@ const Home = () => {
       window.speechSynthesis.speak(utterance);
     };
 
-    const handleCommand = (data) => {
+    const handleCommand = (data, originalTranscript) => {
       const { type, userInput, response } = data;
-
       const cleanResponse = response.replace(/^Here is what I found:\s*/i, "").trim();
+
+      setCommandHistory((prevHistory) => [
+        { user: userInput || originalTranscript, ai: cleanResponse },
+        ...prevHistory,
+      ]);
 
       setTimeout(() => {
         setAiText(cleanResponse); 
         speak(cleanResponse);
         
         const query = encodeURIComponent(userInput || "");
-
         let urlToOpen = "";
         let buttonText = "";
 
@@ -166,7 +169,7 @@ const Home = () => {
           console.log("Response received:", data);
 
           if (data && data.response) {
-            handleCommand(data);
+            handleCommand(data, transcript);
           } else {
             isCooldown.current = false;
             setAiText("I couldn't understand that.");
@@ -216,18 +219,25 @@ const Home = () => {
   return (
     <div className="relative w-full h-screen bg-gradient-to-t from-black to-[#030353] flex flex-col justify-center items-center overflow-hidden">
       
-      {/* --- HOTSTAR-STYLE LEFT SIDEBAR --- */}
-      <div className="absolute left-0 top-0 h-full w-[80px] hover:w-[260px] bg-black/40 backdrop-blur-xl border-r border-white/10 transition-all duration-300 z-50 flex flex-col items-start py-8 overflow-hidden group shadow-2xl">
+      {/* --- HOTSTAR-STYLE LEFT SIDEBAR WITH HISTORY --- */}
+      <div 
+        className={`absolute left-0 top-0 h-full ${
+          isSidebarOpen ? "w-[320px]" : "w-[80px]"
+        } bg-black/50 backdrop-blur-xl border-r border-white/10 transition-all duration-300 z-50 flex flex-col py-6 overflow-hidden shadow-2xl`}
+      >
         
-        {/* User Profile Section */}
-        <div className="flex items-center gap-4 px-5 w-full mt-4 cursor-pointer">
-          {/* Avatar / Initials */}
-          <div className="w-[40px] h-[40px] rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
-            {userData?.name ? userData.name.charAt(0).toUpperCase() : "U"}
+        {/* Toggle Button & User Profile */}
+        <div className="flex items-center gap-4 px-5 w-full">
+          <div 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="w-[40px] h-[40px] flex items-center justify-center cursor-pointer flex-shrink-0 hover:bg-white/10 rounded-full transition"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
           </div>
           
-          {/* Username (Fades in smoothly on hover) */}
-          <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-75 whitespace-nowrap">
+          <div className={`flex flex-col transition-opacity duration-300 whitespace-nowrap ${isSidebarOpen ? "opacity-100" : "opacity-0"}`}>
             <span className="text-white font-semibold text-lg drop-shadow-md">
               {userData?.name || "User"}
             </span>
@@ -237,7 +247,31 @@ const Home = () => {
           </div>
         </div>
 
-        {/* You can easily add more navigation icons below this in the future! */}
+        {/* History Section */}
+        <div className={`mt-8 w-full px-4 overflow-y-auto flex-1 transition-opacity duration-300 custom-scrollbar ${isSidebarOpen ? "opacity-100" : "opacity-0 invisible"}`}>
+          <h3 className="text-white/50 text-xs font-bold uppercase tracking-wider mb-4 px-2">
+            Command History
+          </h3>
+          
+          <div className="flex flex-col gap-3">
+            {commandHistory.length === 0 ? (
+              <p className="text-white/40 text-sm px-2 italic">No history yet. Try saying hi!</p>
+            ) : (
+              commandHistory.map((item, index) => (
+                <div key={index} className="bg-white/5 p-3 rounded-xl border border-white/10 shadow-sm">
+                  <p className="text-white/90 text-sm mb-1">
+                    <span className="text-blue-400 font-bold mr-1">You:</span> 
+                    {item.user}
+                  </p>
+                  <p className="text-white/60 text-xs leading-relaxed">
+                    <span className="text-purple-400 font-bold mr-1">AI:</span> 
+                    {item.ai}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
       {/* --- TOP BUTTONS (SIDE-BY-SIDE) --- */}
@@ -258,7 +292,7 @@ const Home = () => {
       </div>
 
       {/* --- MAIN CENTER CONTENT --- */}
-      <div className="flex flex-col justify-center items-center w-full max-w-2xl mt-10 px-4 pl-[80px]">
+      <div className={`flex flex-col justify-center items-center w-full max-w-2xl mt-10 px-4 transition-all duration-300 ${isSidebarOpen ? "pl-[320px] md:pl-[320px]" : "pl-[80px]"}`}>
         
         {/* Assistant Avatar */}
         <div className="w-[200px] h-[200px] md:w-[250px] md:h-[250px] flex justify-center items-center overflow-hidden rounded-full shadow-[0_0_40px_rgba(30,58,138,0.6)] border-4 border-white/20 bg-[#030326]">
@@ -281,7 +315,6 @@ const Home = () => {
         {/* GIF & Text Stacked Vertically */}
         <div className="flex flex-col items-center justify-center w-full mt-4 gap-4">
           
-          {/* GIF Centered */}
           <div className="w-[100px] sm:w-[120px]">
             {isSpeaking ? (
               <img src={talk} alt="talking" className="w-full object-contain drop-shadow-lg" />
@@ -290,7 +323,6 @@ const Home = () => {
             )}
           </div>
 
-          {/* Clean Response Text */}
           {aiText && (
             <p className="text-white/70 text-sm sm:text-base font-medium text-center max-w-[400px] animate-fade-in">
               {aiText}

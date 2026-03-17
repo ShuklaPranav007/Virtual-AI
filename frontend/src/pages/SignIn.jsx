@@ -8,30 +8,34 @@ import axios from "axios";
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { serverUrl,userData, setUserData } = useContext(userDataContext);
+  const { serverUrl, setUserData } = useContext(userDataContext);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error,setError]=useState("")
-  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
-    setError("")
-    setLoading(true)
+    setError("");
+    setLoading(true);
     try {
-      let result = await axios.post(
-        `${serverUrl}/api/auth/signin`,
-        { email, password },
-        { withCredentials: true }
-      );
-      setUserData(result.data)
-      setLoading(false)
+      // --- UPDATED: No more withCredentials! ---
+      let result = await axios.post(`${serverUrl}/api/auth/signin`, {
+        email,
+        password,
+      });
+
+      // --- UPDATED: Save the generated token ---
+      localStorage.setItem("token", result.data.token);
+      
+      setUserData(result.data);
+      setLoading(false);
       navigate("/");  
     } catch (error) {
       console.log(error);
-      setUserData(null)
-      setLoading(false)
-      setError(error.response.data.message)
+      setUserData(null);
+      setLoading(false);
+      setError(error.response?.data?.message || "Something went wrong.");
     }
   };
 
@@ -86,10 +90,10 @@ const SignIn = () => {
           )}
         </div>
 
-        {error.length>0 && <p className="text-red-500">{error}</p> }
+        {error.length > 0 && <p className="text-red-500">{error}</p>}
 
         <button className="min-w-[150px] h-[60px] mt-[30px] text-black font-semibold bg-white rounded-full text-[19px]" disabled={loading}>
-          {loading?"Loading...." :"Sign In"}
+          {loading ? "Loading...." : "Sign In"}
         </button>
 
         <p

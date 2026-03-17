@@ -12,37 +12,53 @@ function UserContextProvider({ children }) {
   const [backendImage, setBackendImage] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
 
+  // Helper function to attach the token to requests
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return {
+      headers: { Authorization: `Bearer ${token}` },
+    };
+  };
+
   const getGeminiResponse = async (command) => {
     try {
-      // 1. Changed URL to the "ask" route (Verify this matches your backend!)
       const result = await axios.post(
         `${serverUrl}/api/user/asktoassistant`, 
         { command },
-        { withCredentials: true }
+        getAuthHeaders() // Send the token!
       );
-      
       return result.data; 
-
     } catch (error) {
       console.log("Error fetching Gemini response:", error);
-      
       return { response: "Sorry, I am having trouble connecting to my server." };
     }
   };
 
   const handleCurrentUser = async () => {
-    try {
-      const result = await axios.get(`${serverUrl}/api/user/current`, {
-        withCredentials: true,
-      });
+    const token = localStorage.getItem("token");
+    
+    // If no token exists, don't even bother asking the backend
+    if (!token) {
+      setUserData(null);
+      setLoading(false);
+      return;
+    }
 
+    try {
+      const result = await axios.get(
+        `${serverUrl}/api/user/current`, 
+        getAuthHeaders() // Send the token!
+      );
       setUserData(result.data);
     } catch (error) {
+      console.log("Session expired or invalid token.");
       setUserData(null);
+      localStorage.removeItem("token"); // Clean up broken token
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     handleCurrentUser();
   }, []);
@@ -62,9 +78,10 @@ function UserContextProvider({ children }) {
         selectedImage,
         setSelectedImage,
         getGeminiResponse,
+        getAuthHeaders, // Pass this down so Customize.jsx can use it!
       }}
     >
-      {children}{" "}
+      {children}
     </userDataContext.Provider>
   );
 }
