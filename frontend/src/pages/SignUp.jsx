@@ -8,37 +8,31 @@ import axios from "axios";
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { serverUrl, setUserData } = useContext(userDataContext);
+  const { serverUrl,userData, setUserData } = useContext(userDataContext);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error,setError]=useState("")
+   const [loading, setLoading] = useState(false)
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
+    setError("")
     try {
-      // --- UPDATED: No more withCredentials! ---
-      let result = await axios.post(`${serverUrl}/api/auth/signup`, {
-        name,
-        email,
-        password,
-      });
-
-      // --- UPDATED: Save the generated token ---
-      localStorage.setItem("token", result.data.token);
-      
-      setUserData(result.data);
-      setLoading(false);
+      let result = await axios.post(
+        `${serverUrl}/api/auth/signup`,
+        { name, email, password },
+        { withCredentials: true }
+      );
+      setUserData(result.data)
+      setLoading(false)
       navigate("/customize"); 
     } catch (error) {
       console.log(error);
-      setUserData(null);
-      setLoading(false);
-      setError(error.response?.data?.message || "Something went wrong.");
+      setUserData(null)
+      setLoading(false)
+      setError(error.response.data.message)
     }
   };
 
@@ -104,10 +98,10 @@ const SignUp = () => {
           )}
         </div>
 
-        {error.length > 0 && <p className="text-red-500">{error}</p>}
+        {error.length>0 && <p className="text-red-500">{error}</p> }
 
-        <button className="min-w-[150px] h-[60px] mt-[30px] text-black font-semibold bg-white rounded-full text-[19px]" disabled={loading}>
-          {loading ? "Loading...." : "Sign Up"}
+        <button className="min-w-[150px] h-[60px] mt-[30px] text-black font-semibold bg-white rounded-full text-[19px]"disabled={loading}>
+          {loading?"Loading...." :"Sign Up"}
         </button>
 
         <p

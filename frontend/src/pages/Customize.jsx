@@ -6,8 +6,12 @@ import img3 from "../assets/ai3.jpg";
 import img4 from "../assets/ai4.jpg";
 import img5 from "../assets/ai5.webp";
 import img6 from "../assets/ai6.webp";
-import img7 from "../assets/ai7.jpg";
-import img8 from "../assets/ai8.webp";
+import img7 from "../assets/ai9.webp";
+import img8 from "../assets/terminator.jpg";
+import img9 from "../assets/chitti.jpg";
+import img10 from "../assets/walle.webp";
+import img11 from "../assets/eve.jpg";
+import img12 from "../assets/bee.jpeg";
 import { RiImageAddLine } from "react-icons/ri";
 import { userDataContext } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
@@ -95,7 +99,10 @@ const Customize = () => {
           <Card image={img6} />
           <Card image={img7} />
           <Card image={img8} />
-          
+          <Card image={img9} />
+          <Card image={img10} />
+          <Card image={img11} />
+          <Card image={img12} />          
           {/* Custom Upload Button */}
           <div
             className={`w-[120px] h-[120px] m-3 bg-[#030326] border-2 border-blue-500 rounded-full cursor-pointer hover:scale-105 transition overflow-hidden flex items-center justify-center hover:border-4 hover:border-white shadow-lg ${
