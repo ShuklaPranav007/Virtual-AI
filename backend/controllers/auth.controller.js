@@ -30,8 +30,8 @@ export const signUp = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: "strict",
-      secure: false, // true in production (HTTPS)
+      sameSite: "none",
+      secure: true, 
     });
 
     const { password: pwd, ...userData } = user._doc;
@@ -64,8 +64,8 @@ export const login = async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: "lax",
-      secure: false,
+      sameSite: "none",
+      secure: true,
     });
 
     const { password: pwd, ...userData } = userExist._doc;
